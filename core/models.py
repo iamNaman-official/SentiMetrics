@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Avg
 
+
 class AnalysisSession(models.Model):
     """Represents a single analysis session, which can contain multiple sentiment items."""
     title = models.CharField(max_length=100)
@@ -78,5 +79,5 @@ class SentimentItem(models.Model):
         ]
 
     def __str__(self) -> str:
-        """String representation of the sentiment item, primarily for admin and debugging purposes."""
+        """Returns string representation for admin and debugging."""
         return f"{self.sentiment_label}: {self.content[:50]}..."
