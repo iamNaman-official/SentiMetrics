@@ -2,34 +2,47 @@ name: SentiMetrics CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build-and-test:
+  test:
+    name: Django Test Suite
     runs-on: ubuntu-latest
 
+    # Injecting environment variables for the test runner
+    env:
+      DJANGO_SECRET_KEY: "django-test-secret-key-github-actions"
+      DEBUG: "True"
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11" # Update this if you are using a different Python version
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Lint with Ruff
-      run: |
-        # This will fail the pipeline if Ruff finds formatting or syntax errors
-        ruff check .
+      - name: Run Ruff Linter
+        run: |
+          # This will fail the action if code formatting is incorrect
+          ruff check .
 
-    - name: Run Django Tests
-      run: |
-        # This will fail the pipeline if any tests fail
-        python manage.py test
+      - name: Django System Check
+        run: |
+          # Ensures settings and models are configured correctly
+          python manage.py check
+
+      - name: Run Django Tests
+        run: |
+          # Tests the 'core' app logic (Updated from 'monitor')
+          python manage.py test core
