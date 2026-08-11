@@ -10,6 +10,37 @@
     <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">⬅ Back to Dashboard</a>
 </div>
 
+<!-- NEW: Backend-Driven Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0 border-start border-primary border-4 h-100 py-2">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase fw-bold">Total Analyzed</h6>
+                <!-- Using model method: total_items -->
+                <h2 class="mb-0 fw-bold">{{ session.total_items }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0 border-start border-info border-4 h-100 py-2">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase fw-bold">Average Score</h6>
+                <!-- Using model method: average_sentiment_score -->
+                <h2 class="mb-0 fw-bold">{{ session.average_sentiment_score }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm border-0 border-start border-warning border-4 h-100 py-2">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase fw-bold">Overall Sentiment</h6>
+                <!-- Using model method: overall_sentiment -->
+                <h2 class="mb-0 fw-bold text-capitalize">{{ session.overall_sentiment }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row mb-5">
     <!-- Chart Section -->
     <div class="col-md-5 mb-4">
@@ -39,9 +70,9 @@
                             <th scope="col" class="text-center">Sentiment</th>
                         </tr>
                     </thead>
-                    <tbody id="sentimentItemsTableBody">
+                    <tbody>
                         {% for item in items %}
-                        <tr data-sentiment-label="{{ item.sentiment_label }}">
+                        <tr>
                             <!-- Truncate long text so it doesn't break the table -->
                             <td title="{{ item.content }}">{{ item.content|truncatechars:60 }}</td>
                             <td class="text-center fw-bold">{{ item.sentiment_score|floatformat:2 }}</td>
@@ -63,38 +94,23 @@
     </div>
 </div>
 
-<!-- Chart.js Logic to parse Django data -->
+<!-- 1. Securely inject backend dictionary into frontend JSON (Pro Django trick!) -->
+{{ session.chart_data|json_script:"chartData" }}
+
+<!-- Chart.js Logic using Backend Data -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let posCount = 0;
-        let neuCount = 0;
-        let negCount = 0;
-
-        const rows = document.querySelectorAll('#sentimentItemsTableBody tr');
-        rows.forEach(function(row) {
-            const label = row.getAttribute('data-sentiment-label');
-
-            if (label === 'positive') {
-                posCount++;
-            } else if (label === 'negative') {
-                negCount++;
-            } else {
-                neuCount++;
-            }
-        });
+        // 2. Parse the JSON data directly from the Django model
+        const backendData = JSON.parse(document.getElementById('chartData').textContent);
 
         const ctx = document.getElementById('sentimentChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Positive', 'Neutral', 'Negative'],
+                labels: backendData.labels,
                 datasets: [{
-                    data: [posCount, neuCount, negCount],
-                    backgroundColor: [
-                        '#198754', // Bootstrap Success Green
-                        '#6c757d', // Bootstrap Secondary Gray
-                        '#dc3545'  // Bootstrap Danger Red
-                    ],
+                    data: backendData.counts,
+                    backgroundColor: backendData.colors,
                     borderWidth: 1
                 }]
             },
