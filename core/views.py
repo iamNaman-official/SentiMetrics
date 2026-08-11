@@ -4,6 +4,7 @@ import io
 from django.contrib import messages
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -220,3 +221,25 @@ def session_detail(request, session_id):
     return render(
         request, "session_detail.html", {"session": session, "items": items}
     )
+
+def export_session_csv(request, session_id):
+    """Generates and downloads a CSV report of the analysis session."""
+    session = get_object_or_404(AnalysisSession, id=session_id)
+    response = HttpResponse(content_type='text/csv')
+    
+    safe_title = session.title.replace(' ', '_').replace('/', '-')
+    response['Content-Disposition'] = f'attachment; filename="SentiMetrics_Report_{safe_title}.csv"'
+    
+    writer = csv.writer(response)
+    
+    writer.writerow(['Text Content', 'Sentiment Score', 'Sentiment Label', 'Analyzed At'])
+    
+    for item in session.items.all().iterator():
+        writer.writerow([
+            item.content, 
+            item.sentiment_score, 
+            item.sentiment_label, 
+            item.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+        
+    return response
