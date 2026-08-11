@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-5">
+    <!-- Single Text Analysis Form -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">✍️ Quick Text Analysis</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'analyze_single' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Session Title (Optional)</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g., iPhone 15 Review">
+                    </div>
+                    <div class="mb-3">
+                        <label for="text" class="form-label">Text to Analyze <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="text" name="text" rows="4" required placeholder="Paste a tweet, review, or comment here..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Analyze Text</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Batch Upload Form -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="card-title mb-0">📁 Batch CSV Upload</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'analyze_batch' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="batch_title" class="form-label">Dataset Title (Optional)</label>
+                        <input type="text" class="form-control" id="batch_title" name="title" placeholder="e.g., Kaggle Twitter Dataset">
+                    </div>
+                    <div class="mb-3">
+                        <label for="csv_file" class="form-label">Upload .CSV File <span class="text-danger">*</span></label>
+                        <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" title="Choose a CSV file to upload" placeholder="Choose a CSV file" required>
+                        <div class="form-text">File must contain a column named "text", "comment", or "tweet".</div>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Process Dataset</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Past Analysis Sessions -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3">🕒 Past Analysis Sessions</h3>
+        {% if sessions %}
+            <div class="list-group shadow-sm">
+                {% for session in sessions %}
+                    <a href="{% url 'session_detail' session.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 fw-bold">{{ session.title }}</h6>
+                            <small class="text-muted">Analyzed on: {{ session.created_at|date:"M d, Y h:i A" }}</small>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">View Results ➔</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-secondary text-center" role="alert">
+                No analysis sessions yet. Upload a dataset or analyze some text to get started!
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
