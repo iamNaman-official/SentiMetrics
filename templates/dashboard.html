@@ -1,73 +1,268 @@
 {% extends 'base.html' %}
 
+{% block title %}Dashboard · SentiMetrics{% endblock %}
+
 {% block content %}
-<div class="row mb-5">
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">Quick Text Analysis</h5>
+
+<section class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+    <div class="rounded-xl border border-edge bg-surface p-5">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-400">Total Sessions</span>
+            <svg class="h-5 w-5 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.5 2.5 3.75 5.5 3.75 9s-1.25 6.5-3.75 9c-2.5-2.5-3.75-5.5-3.75-9S9.5 5.5 12 3ZM3.5 9h17M3.5 15h17" />
+            </svg>
+        </div>
+        <p class="mt-3 font-mono text-3xl font-semibold text-white">{{ total_sessions|default:0 }}</p>
+    </div>
+
+    <div class="rounded-xl border border-edge bg-surface p-5">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-400">Positive Sessions</span>
+            <svg class="h-5 w-5 text-positive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75ZM14.625 9.75c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM8.25 15a3.75 3.75 0 0 0 7.5 0h-7.5Z" />
+            </svg>
+        </div>
+        <p class="mt-3 font-mono text-3xl font-semibold text-positive">{{ total_positive_sessions|default:0 }}</p>
+    </div>
+
+    <div class="rounded-xl border border-edge bg-surface p-5">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-400">Neutral Sessions</span>
+            <svg class="h-5 w-5 text-neutral" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+        </div>
+        <p class="mt-3 font-mono text-3xl font-semibold text-neutral">{{ total_neutral_sessions|default:0 }}</p>
+    </div>
+
+    <div class="rounded-xl border border-edge bg-surface p-5">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-slate-400">Negative Sessions</span>
+            <svg class="h-5 w-5 text-negative" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75ZM14.625 9.75c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Z" />
+            </svg>
+        </div>
+        <p class="mt-3 font-mono text-3xl font-semibold text-negative">{{ total_negative_sessions|default:0 }}</p>
+    </div>
+</section>
+
+<section id="quick-analysis" class="mt-10">
+    <h2 class="text-lg font-semibold text-white">Run a new analysis</h2>
+    <p class="mt-1 text-sm text-slate-500">Analyze a single piece of text or process a CSV in bulk.</p>
+
+    <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+        <div class="rounded-xl border border-edge bg-surface p-6">
+            <div class="flex items-center gap-2.5">
+                <svg class="h-5 w-5 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                </svg>
+                <h3 class="text-sm font-semibold text-white">Quick Text Analysis</h3>
             </div>
-            <div class="card-body">
-                <form action="{% url 'analyze_single' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Session Title (Optional)</label>
-                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g., iPhone 15 Review">
-                    </div>
-                    <div class="mb-3">
-                        <label for="text" class="form-label">Text to Analyze <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="text" name="text" rows="4" required placeholder="Paste a tweet, review, or comment here..."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Analyze Text</button>
-                </form>
+
+            <form method="POST" action="{% url 'analyze_single' %}" class="mt-5 space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label for="single-title" class="mb-1.5 block text-xs text-slate-500">Title (optional)</label>
+                    <input
+                        type="text"
+                        id="single-title"
+                        name="title"
+                        placeholder="e.g. Support ticket #4821"
+                        class="w-full rounded-lg border border-edge bg-base px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-brand-500 focus:outline-none"
+                    >
+                </div>
+
+                <div>
+                    <label for="single-text" class="mb-1.5 block text-xs text-slate-500">Text</label>
+                    <textarea
+                        id="single-text"
+                        name="text"
+                        required
+                        rows="5"
+                        placeholder="Paste a review, comment, tweet, or any block of text..."
+                        class="w-full resize-none rounded-lg border border-edge bg-base px-3.5 py-3 text-sm leading-relaxed text-slate-100 placeholder-slate-600 transition-colors focus:border-brand-500 focus:outline-none"
+                    ></textarea>
+                </div>
+
+                <button
+                    type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                >
+                    Analyze Sentiment
+                </button>
+            </form>
+        </div>
+
+        <div class="rounded-xl border border-edge bg-surface p-6">
+            <div class="flex items-center gap-2.5">
+                <svg class="h-5 w-5 text-positive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5" />
+                </svg>
+                <h3 class="text-sm font-semibold text-white">Batch CSV Upload</h3>
             </div>
+
+            <form method="POST" action="{% url 'analyze_batch' %}" enctype="multipart/form-data" class="mt-5 space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label for="batch-title" class="mb-1.5 block text-xs text-slate-500">Title (optional)</label>
+                    <input
+                        type="text"
+                        id="batch-title"
+                        name="title"
+                        placeholder="e.g. Q3 App Store Reviews"
+                        class="w-full rounded-lg border border-edge bg-base px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-600 transition-colors focus:border-positive focus:outline-none"
+                    >
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-xs text-slate-500">CSV File</label>
+                    <label
+                        for="batch-file"
+                        id="dropzone"
+                        class="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-edge bg-base px-6 py-8 text-center transition-colors hover:border-positive/50"
+                    >
+                        <svg class="h-8 w-8 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 7.5 12 3m0 0L7.5 7.5M12 3v13.5" />
+                        </svg>
+                        <p class="mt-3 text-sm text-slate-400">
+                            <span class="text-positive">Click to upload</span> or drag and drop
+                        </p>
+                        <p id="dropzone-filename" class="mt-1 font-mono text-xs text-slate-600">CSV files only, up to 5MB</p>
+                        <input id="batch-file" name="csv_file" type="file" accept=".csv" required class="hidden">
+                    </label>
+                    <p class="mt-2 text-xs text-slate-500">Supports columns: <span class="font-mono text-slate-400">text</span>, <span class="font-mono text-slate-400">comment</span>, <span class="font-mono text-slate-400">tweet</span></p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-positive px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:brightness-110"
+                >
+                    Process Batch
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="mt-10">
+    <div class="mb-4 flex items-end justify-between">
+        <div>
+            <h2 class="text-lg font-semibold text-white">Analysis History</h2>
+            <p class="mt-1 text-sm text-slate-500">{{ sessions|length }} session{{ sessions|length|pluralize }}</p>
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-success text-white">
-                <h5 class="card-title mb-0">Batch CSV Upload</h5>
-            </div>
-            <div class="card-body">
-                <form action="{% url 'analyze_batch' %}" method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="batch_title" class="form-label">Dataset Title (Optional)</label>
-                        <input type="text" class="form-control" id="batch_title" name="title" placeholder="e.g., Kaggle Twitter Dataset">
-                    </div>
-                    <div class="mb-3">
-                        <label for="csv_file" class="form-label">Upload .CSV File <span class="text-danger">*</span></label>
-                        <input class="form-control" type="file" id="csv_file" name="csv_file" accept=".csv" title="Choose a CSV file to upload" placeholder="Choose a CSV file" required>
-                        <div class="form-text">File must contain a column named "text", "comment", or "tweet".</div>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Process Dataset</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+    {% if sessions %}
+    <div class="divide-y divide-edge overflow-hidden rounded-xl border border-edge bg-surface">
+        {% for session in sessions %}
+        <a href="{% url 'session_detail' session.id %}"
+           class="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-surfaceHover">
 
-<div class="row">
-    <div class="col-12">
-        <h3 class="mb-3">Past Analysis Sessions</h3>
-        {% if sessions %}
-            <div class="list-group shadow-sm">
-                {% for session in sessions %}
-                    <a href="{% url 'session_detail' session.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 fw-bold">{{ session.title }}</h6>
-                            <small class="text-muted">Analyzed on: {{ session.created_at|date:"M d, Y h:i A" }}</small>
-                        </div>
-                        <span class="badge bg-secondary rounded-pill">View Results ➔</span>
-                    </a>
-                {% endfor %}
+            <div class="flex min-w-0 items-center gap-3.5">
+                <span class="h-2.5 w-2.5 flex-shrink-0 rounded-full
+                    {% if session.overall_sentiment == 'positive' %}bg-positive
+                    {% elif session.overall_sentiment == 'negative' %}bg-negative
+                    {% else %}bg-neutral{% endif %}"></span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-medium text-white">{{ session.title|default:"Untitled Session" }}</p>
+                    <p class="mt-0.5 truncate font-mono text-xs text-slate-500">
+                        {{ session.total_items }} items · {{ session.created_at|date:"M d, Y" }}
+                    </p>
+                </div>
             </div>
-        {% else %}
-            <div class="alert alert-secondary text-center" role="alert">
-                No analysis sessions yet. Upload a dataset or analyze some text to get started!
+
+            <div class="flex flex-shrink-0 items-center gap-6">
+                <div class="hidden text-right sm:block">
+                    <p class="font-mono text-sm text-slate-200">{{ session.average_sentiment_score }}</p>
+                    <p class="text-xs text-slate-600">avg score</p>
+                </div>
+
+                {% if session.overall_sentiment == 'positive' %}
+                    <span class="text-xs font-semibold uppercase tracking-wide text-positive">Positive</span>
+                {% elif session.overall_sentiment == 'negative' %}
+                    <span class="text-xs font-semibold uppercase tracking-wide text-negative">Negative</span>
+                {% else %}
+                    <span class="text-xs font-semibold uppercase tracking-wide text-neutral">Neutral</span>
+                {% endif %}
+
+                <span class="flex items-center gap-1 text-sm font-medium text-brand-400">
+                    View
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                    </svg>
+                </span>
             </div>
-        {% endif %}
+        </a>
+        {% endfor %}
     </div>
-</div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-edge bg-surface/50 px-6 py-16 text-center">
+        <svg class="h-8 w-8 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
+        </svg>
+        <h3 class="mt-4 text-sm font-semibold text-white">No sessions yet</h3>
+        <p class="mt-1.5 max-w-sm text-sm text-slate-500">Run your first analysis above and it'll show up here.</p>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('batch-file');
+        const filenameEl = document.getElementById('dropzone-filename');
+        if (!dropzone || !fileInput) return;
+
+        const MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024; // keep in sync with views.py MAX_CSV_SIZE_BYTES
+
+        const showFilename = (file) => {
+            if (!file) return;
+
+            if (file.size > MAX_CSV_SIZE_BYTES) {
+                filenameEl.textContent = `File exceeds 5MB limit (${(file.size / (1024 * 1024)).toFixed(1)}MB)`;
+                filenameEl.classList.remove('text-positive');
+                filenameEl.classList.add('text-negative');
+                fileInput.value = '';
+                return;
+            }
+
+            filenameEl.textContent = file.name;
+            filenameEl.classList.remove('text-negative');
+            filenameEl.classList.add('text-positive');
+        };
+
+        fileInput.addEventListener('change', () => showFilename(fileInput.files[0]));
+
+        ['dragenter', 'dragover'].forEach((evt) => {
+            dropzone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-positive');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach((evt) => {
+            dropzone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-positive');
+            });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                showFilename(file);
+            }
+        });
+    })();
+</script>
 {% endblock %}
