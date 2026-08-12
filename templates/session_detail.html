@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- Header Section -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-0">{{ session.title }}</h2>
         <small class="text-muted">Analyzed on {{ session.created_at|date:"F j, Y, g:i a" }}</small>
     </div>
     
-    <!-- Grouped the buttons in a flex container with a gap -->
     <div class="d-flex gap-2">
         <!-- NEW DOWNLOAD BUTTON -->
         <a href="{% url 'export_session_csv' session.id %}" class="btn btn-primary shadow-sm">
@@ -21,7 +19,6 @@
     </div>
 </div>
 
-<!-- NEW: Backend-Driven Summary Cards -->
 <div class="row mb-4">
     <div class="col-md-4">
         <div class="card text-center shadow-sm border-0 border-start border-primary border-4 h-100 py-2">
@@ -53,24 +50,21 @@
 </div>
 
 <div class="row mb-5">
-    <!-- Chart Section -->
     <div class="col-md-5 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-dark text-white">
-                <h5 class="card-title mb-0">📊 Sentiment Breakdown</h5>
+                <h5 class="card-title mb-0">Sentiment Breakdown</h5>
             </div>
             <div class="card-body d-flex justify-content-center align-items-center">
-                <!-- Canvas for Chart.js -->
                 <canvas id="sentimentChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Summary Stats Section -->
     <div class="col-md-7 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-dark text-white">
-                <h5 class="card-title mb-0">📋 Analysis Data</h5>
+                <h5 class="card-title mb-0">Analysis Data</h5>
             </div>
             <div class="card-body p-0" style="max-height: 350px; overflow-y: auto;">
                 <table class="table table-hover table-striped mb-0">
@@ -84,7 +78,6 @@
                     <tbody>
                         {% for item in items %}
                         <tr>
-                            <!-- Truncate long text so it doesn't break the table -->
                             <td title="{{ item.content }}">{{ item.content|truncatechars:60 }}</td>
                             <td class="text-center fw-bold">{{ item.sentiment_score|floatformat:2 }}</td>
                             <td class="text-center">
@@ -105,13 +98,10 @@
     </div>
 </div>
 
-<!-- 1. Securely inject backend dictionary into frontend JSON (Pro Django trick!) -->
 {{ session.chart_data|json_script:"chartData" }}
 
-<!-- Chart.js Logic using Backend Data -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 2. Parse the JSON data directly from the Django model
         const backendData = JSON.parse(document.getElementById('chartData').textContent);
 
         const ctx = document.getElementById('sentimentChart').getContext('2d');

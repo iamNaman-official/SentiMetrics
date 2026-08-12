@@ -2,11 +2,10 @@
 
 {% block content %}
 <div class="row mb-5">
-    <!-- Single Text Analysis Form -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0">✍️ Quick Text Analysis</h5>
+                <h5 class="card-title mb-0">Quick Text Analysis</h5>
             </div>
             <div class="card-body">
                 <form action="{% url 'analyze_single' %}" method="POST">
@@ -25,11 +24,10 @@
         </div>
     </div>
 
-    <!-- CSV Batch Upload Form -->
     <div class="col-md-6 mb-4">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-success text-white">
-                <h5 class="card-title mb-0">📁 Batch CSV Upload</h5>
+                <h5 class="card-title mb-0">Batch CSV Upload</h5>
             </div>
             <div class="card-body">
                 <form action="{% url 'analyze_batch' %}" method="POST" enctype="multipart/form-data">
@@ -50,10 +48,9 @@
     </div>
 </div>
 
-<!-- Past Analysis Sessions -->
 <div class="row">
     <div class="col-12">
-        <h3 class="mb-3">🕒 Past Analysis Sessions</h3>
+        <h3 class="mb-3">Past Analysis Sessions</h3>
         {% if sessions %}
             <div class="list-group shadow-sm">
                 {% for session in sessions %}
