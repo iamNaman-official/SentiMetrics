@@ -7,7 +7,18 @@
         <h2 class="mb-0">{{ session.title }}</h2>
         <small class="text-muted">Analyzed on {{ session.created_at|date:"F j, Y, g:i a" }}</small>
     </div>
-    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">⬅ Back to Dashboard</a>
+    
+    <!-- Grouped the buttons in a flex container with a gap -->
+    <div class="d-flex gap-2">
+        <!-- NEW DOWNLOAD BUTTON -->
+        <a href="{% url 'export_session_csv' session.id %}" class="btn btn-primary shadow-sm">
+            ⬇️ Download CSV
+        </a>
+        
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary shadow-sm">
+            ⬅ Back to Dashboard
+        </a>
+    </div>
 </div>
 
 <!-- NEW: Backend-Driven Summary Cards -->
