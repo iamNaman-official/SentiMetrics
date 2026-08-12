@@ -4,24 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SentiMetrics</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-light">
 
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-            <!-- Dynamic URL tag instead of hardcoded "/" -->
             <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">SentiMetrics</a>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
     <div class="container">
-        <!-- Display Django Messages (Success/Error alerts) -->
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -31,12 +25,10 @@
             {% endfor %}
         {% endif %}
 
-        <!-- Child templates will inject their content here -->
         {% block content %}
         {% endblock %}
     </div>
 
-    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
