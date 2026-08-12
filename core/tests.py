@@ -94,6 +94,33 @@ class ViewIntegrationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "dashboard.html")
 
+    def test_dashboard_stats_context_uses_aggregates(self):
+        SentimentItem.objects.create(
+            session=self.session,
+            content="Great",
+            sentiment_score=0.9,
+            sentiment_label="positive",
+        )
+        SentimentItem.objects.create(
+            session=self.session,
+            content="Bad",
+            sentiment_score=-0.7,
+            sentiment_label="negative",
+        )
+        SentimentItem.objects.create(
+            session=self.session,
+            content="Okay",
+            sentiment_score=0.0,
+            sentiment_label="neutral",
+        )
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.context["total_sessions"], 1)
+        self.assertEqual(response.context["total_positive_sessions"], 1)
+        self.assertEqual(response.context["total_negative_sessions"], 0)
+        self.assertEqual(response.context["total_neutral_sessions"], 0)
+
     def test_analyze_single_valid_submission(self):
         response = self.client.post(reverse("analyze_single"), {
             "title": "Single Test",

@@ -18,8 +18,29 @@ ITEMS_PER_PAGE = 20  # Rows displayed per table page
 
 def dashboard(request):
     """Renders the dashboard with past analysis sessions."""
-    sessions = AnalysisSession.objects.all()
-    return render(request, "dashboard.html", {"sessions": sessions})
+    sessions = AnalysisSession.objects.all().order_by('-created_at')
+    total_sessions = sessions.count()
+    positive_sessions = 0
+    negative_sessions = 0
+    neutral_sessions = 0
+
+    for session in sessions:
+        overall_sentiment = session.overall_sentiment()
+        if overall_sentiment == 'positive':
+            positive_sessions += 1
+        elif overall_sentiment == 'negative':
+            negative_sessions += 1
+        else:
+            neutral_sessions += 1
+
+    context = {
+        "sessions": sessions,
+        "total_sessions": total_sessions,
+        "total_positive_sessions": positive_sessions,
+        "total_negative_sessions": negative_sessions,
+        "total_neutral_sessions": neutral_sessions,
+    }
+    return render(request, "dashboard.html", context)
 
 
 def analyze_single(request):
