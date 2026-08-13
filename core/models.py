@@ -1,4 +1,3 @@
-from django.contrib.sites import requests
 from django.db import models
 from django.db.models import Avg
 
@@ -67,6 +66,7 @@ class AnalysisSession(models.Model):
     def generate_insights(self):
         """Generate a concise executive summary using a local Ollama model."""
         from collections import Counter
+
         import requests
 
         total_items = self.items.count()
