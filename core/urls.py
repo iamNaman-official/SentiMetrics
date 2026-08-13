@@ -8,4 +8,5 @@ urlpatterns = [
     path('analyze/batch/', views.analyze_batch, name='analyze_batch'),
     path('session/<int:session_id>/', views.session_detail, name='session_detail'),
     path('session/<int:session_id>/export/', views.export_session_csv, name='export_session_csv'),
+    path('session/<int:session_id>/insights/', views.get_session_insights, name='get_session_insights'),
 ]

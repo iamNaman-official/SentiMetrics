@@ -2,9 +2,8 @@ import csv
 import io
 
 from django.contrib import messages
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -13,7 +12,6 @@ from .utils import analyze_text
 
 # CONSTANTS
 MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB Max File Size Limit
-ITEMS_PER_PAGE = 20  # Rows displayed per table page
 
 
 def dashboard(request):
@@ -224,24 +222,21 @@ def analyze_batch(request):
 
 
 def session_detail(request, session_id):
-    """Renders session results with backend SQL pagination."""
+    """Renders session results instantly without waiting for Ollama."""
     session = get_object_or_404(AnalysisSession, id=session_id)
-    items_list = session.items.all()
-
-    # 7. Django Backend Pagination
-    paginator = Paginator(items_list, ITEMS_PER_PAGE)
-    page_number = request.GET.get("page", 1)
-
-    try:
-        items = paginator.page(page_number)
-    except PageNotAnInteger:
-        items = paginator.page(1)
-    except EmptyPage:
-        items = paginator.page(paginator.num_pages)
+    items = session.items.all()[:1000]
 
     return render(
         request, "session_detail.html", {"session": session, "items": items}
     )
+
+
+def get_session_insights(request, session_id):
+    """API endpoint to generate local Ollama AI insights asynchronously."""
+    session = get_object_or_404(AnalysisSession, id=session_id)
+    insights = session.generate_insights
+    return JsonResponse({"insights": insights})
+
 
 def export_session_csv(request, session_id):
     """Generates and downloads a CSV report of the analysis session."""
