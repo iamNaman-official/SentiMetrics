@@ -24,15 +24,63 @@
         </div>
     </div>
 
-    <span class="inline-flex flex-shrink-0 items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide
-        {% if session.overall_sentiment == 'positive' %}border-positive/30 text-positive
-        {% elif session.overall_sentiment == 'negative' %}border-negative/30 text-negative
-        {% else %}border-neutral/30 text-neutral{% endif %}">
-        {{ session.overall_sentiment }}
-    </span>
+    <div class="flex items-center gap-3">
+        <a href="{% url 'export_session_csv' session.id %}" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-700 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export CSV
+        </a>
+        <span class="inline-flex flex-shrink-0 items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide
+            {% if session.overall_sentiment == 'positive' %}border-positive/30 text-positive
+            {% elif session.overall_sentiment == 'negative' %}border-negative/30 text-negative
+            {% else %}border-neutral/30 text-neutral{% endif %}">
+            {{ session.overall_sentiment }}
+        </span>
+    </div>
 </div>
 
-<section class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+<style>
+    @keyframes ai-rainbow-glow {
+        0% { border-color: #3b82f6; box-shadow: 0 0 20px #3b82f640, inset 0 0 10px #3b82f610; }
+        25% { border-color: #a855f7; box-shadow: 0 0 20px #a855f740, inset 0 0 10px #a855f710; }
+        50% { border-color: #ec4899; box-shadow: 0 0 20px #ec489940, inset 0 0 10px #ec489910; }
+        75% { border-color: #eab308; box-shadow: 0 0 20px #eab30840, inset 0 0 10px #eab30810; }
+        100% { border-color: #3b82f6; box-shadow: 0 0 20px #3b82f640, inset 0 0 10px #3b82f610; }
+    }
+    .rainbow-active {
+        animation: ai-rainbow-glow 2s ease-in-out infinite !important;
+    }
+    #wordCloudCanvas {
+        transition: opacity 0.3s ease-in-out;
+    }
+    .cloud-fade {
+        opacity: 0;
+    }
+</style>
+
+<div id="ai-container" class="mt-8 flex gap-4 rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-5 shadow-sm transition-all duration-500">
+    <div class="flex-shrink-0 text-2xl" id="ai-icon"></div>
+    <div class="w-full">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold tracking-wide text-indigo-300 uppercase">AI Executive Summary</h3>
+            <button id="generate-btn" onclick="simulateAIGeneration()" class="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 shadow-sm flex items-center gap-1.5">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Generate Insights
+            </button>
+        </div>
+
+        <div id="ai-loading" class="hidden mt-4 flex-col gap-2.5">
+            <div class="h-2 w-full animate-pulse rounded-full bg-indigo-500/30"></div>
+            <div class="h-2 w-3/4 animate-pulse rounded-full bg-indigo-500/30"></div>
+            <p class="mt-1 text-xs font-mono text-indigo-300/80 animate-pulse">Running local Ollama agent (qwen2.5-coder)... analyzing feedback landscape...</p>
+        </div>
+
+        <p id="ai-result" class="hidden mt-3 text-sm text-indigo-100 leading-relaxed opacity-0 transition-opacity duration-1000 ease-in-out">
+            <!-- Populated asynchronously via Ollama -->
+        </p>
+    </div>
+</div>
+
+<section class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
     <div class="rounded-xl border border-edge bg-surface p-5">
         <span class="text-xs uppercase tracking-wide text-slate-500">Total Analyzed</span>
         <p class="mt-2 font-mono text-2xl font-semibold text-white">{{ session.total_items }}</p>
@@ -54,31 +102,61 @@
 
 <section class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
 
-    <div class="rounded-xl border border-edge bg-surface p-6 lg:col-span-2">
-        <h2 class="text-sm font-semibold text-white">Sentiment Breakdown</h2>
+    <div class="flex flex-col gap-6 lg:col-span-2">
+        <div class="rounded-xl border border-edge bg-surface p-6">
+            <h2 class="text-sm font-semibold text-white">Sentiment Breakdown</h2>
 
-        <div class="relative mt-6 flex h-64 items-center justify-center">
-            <canvas id="sentimentChart"></canvas>
+            <div class="relative mt-6 flex h-48 items-center justify-center">
+                <canvas id="sentimentChart"></canvas>
+            </div>
+
+            <div class="mt-6 flex items-center justify-center gap-6 text-xs">
+                <span class="flex items-center gap-2 text-slate-400">
+                    <span class="h-2.5 w-2.5 rounded-full bg-positive"></span> Positive
+                </span>
+                <span class="flex items-center gap-2 text-slate-400">
+                    <span class="h-2.5 w-2.5 rounded-full bg-negative"></span> Negative
+                </span>
+                <span class="flex items-center gap-2 text-slate-400">
+                    <span class="h-2.5 w-2.5 rounded-full bg-neutral"></span> Neutral
+                </span>
+            </div>
         </div>
 
-        <div class="mt-6 flex items-center justify-center gap-6 text-xs">
-            <span class="flex items-center gap-2 text-slate-400">
-                <span class="h-2.5 w-2.5 rounded-full bg-positive"></span> Positive
-            </span>
-            <span class="flex items-center gap-2 text-slate-400">
-                <span class="h-2.5 w-2.5 rounded-full bg-negative"></span> Negative
-            </span>
-            <span class="flex items-center gap-2 text-slate-400">
-                <span class="h-2.5 w-2.5 rounded-full bg-neutral"></span> Neutral
-            </span>
+        <div class="rounded-xl border border-edge bg-surface p-6">
+            <h2 class="text-sm font-semibold text-white">Negative Word Cloud</h2>
+            <p class="mt-1 text-xs text-slate-500">Most frequent words driving negative scores.</p>
+            <div class="relative mt-4 flex items-center justify-center">
+                <canvas id="wordCloudCanvas" width="300" height="200"></canvas>
+            </div>
         </div>
     </div>
 
     <div class="flex flex-col rounded-xl border border-edge bg-surface p-6 lg:col-span-3">
-        <h2 class="text-sm font-semibold text-white">Analyzed Items</h2>
+        
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-sm font-semibold text-white">Analyzed Items</h2>
+            
+            <div class="flex flex-wrap items-center gap-2.5">
+                <div class="relative w-full sm:w-48">
+                    <svg class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" id="searchInput" onkeyup="applyTableFilters()" placeholder="Search comments..." 
+                           class="w-full rounded-lg border border-edge bg-surfaceHover py-1 pl-8 pr-2.5 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </div>
 
-        <div class="mt-5 max-h-[26rem] overflow-y-auto rounded-lg border border-edge">
-            <table class="w-full text-left text-sm">
+                <div class="flex gap-1 rounded-lg border border-edge bg-surfaceHover p-1">
+                    <button onclick="setSentimentFilter('all', this)" class="filter-btn rounded px-2 py-0.5 text-xs font-medium bg-slate-700 text-white transition-colors">All</button>
+                    <button onclick="setSentimentFilter('positive', this)" class="filter-btn rounded px-2 py-0.5 text-xs font-medium text-slate-400 hover:text-emerald-400 transition-colors">Positive</button>
+                    <button onclick="setSentimentFilter('negative', this)" class="filter-btn rounded px-2 py-0.5 text-xs font-medium text-slate-400 hover:text-red-400 transition-colors">Negative</button>
+                    <button onclick="setSentimentFilter('neutral', this)" class="filter-btn rounded px-2 py-0.5 text-xs font-medium text-slate-400 hover:text-slate-300 transition-colors">Neutral</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 max-h-[35rem] overflow-y-auto rounded-lg border border-edge">
+            <table class="w-full text-left text-sm" id="itemsTable">
                 <thead class="sticky top-0 z-10 bg-surface">
                     <tr class="border-b border-edge text-xs uppercase tracking-wide text-slate-500">
                         <th class="px-4 py-3 font-medium">Content</th>
@@ -88,7 +166,7 @@
                 </thead>
                 <tbody class="divide-y divide-edge">
                     {% for item in items %}
-                    <tr class="transition-colors hover:bg-surfaceHover">
+                    <tr class="data-row transition-colors hover:bg-surfaceHover">
                         <td class="max-w-xs px-4 py-3 text-slate-300">
                             <p class="truncate" title="{{ item.content }}">{{ item.content|truncatechars:80 }}</p>
                         </td>
@@ -108,6 +186,10 @@
                         <td colspan="3" class="px-4 py-10 text-center text-sm text-slate-500">No items found for this session.</td>
                     </tr>
                     {% endfor %}
+                    
+                    <tr id="noResultsRow" class="hidden">
+                        <td colspan="3" class="px-4 py-10 text-center text-sm text-slate-500">No matching comments found.</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -120,14 +202,19 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+
 <script>
     (function () {
-        const raw = document.getElementById('chartData').textContent;
+        const rawElement = document.getElementById('chartData');
+        if (!rawElement) return;
+        
+        const raw = rawElement.textContent;
         const data = JSON.parse(raw);
 
         const labels = data.labels ?? ['Positive', 'Negative', 'Neutral'];
         const values = data.counts ?? [0, 0, 0];
-        const colors = ['#10B981', '#EF4444', '#6B7280']; // keep in sync with the theme, not model's Bootstrap colors
+        const colors = ['#10B981', '#EF4444', '#6B7280']; 
 
         const ctx = document.getElementById('sentimentChart').getContext('2d');
         new Chart(ctx, {
@@ -161,5 +248,181 @@
             },
         });
     })();
+
+    // Asynchronous AI Generation via Ollama Backend Endpoint
+    function simulateAIGeneration() {
+        const btn = document.getElementById('generate-btn');
+        const loading = document.getElementById('ai-loading');
+        const result = document.getElementById('ai-result');
+        const icon = document.getElementById('ai-icon');
+        const container = document.getElementById('ai-container');
+
+        if (!btn || !loading || !result || !icon || !container) return;
+
+        btn.style.display = 'none';
+        loading.classList.remove('hidden');
+        loading.classList.add('flex');
+        icon.classList.add('animate-pulse');
+        container.classList.add('rainbow-active');
+
+        // Fetch the summary asynchronously from Django while loading bars spin
+        fetch("{% url 'get_session_insights' session.id %}")
+            .then(response => response.json())
+            .then(data => {
+                result.innerText = data.insights;
+
+                loading.classList.remove('flex');
+                loading.classList.add('hidden');
+                icon.classList.remove('animate-pulse');
+                container.classList.remove('rainbow-active');
+
+                result.classList.remove('hidden');
+                setTimeout(() => {
+                    result.classList.remove('opacity-0');
+                    result.classList.add('opacity-100');
+                }, 50);
+            })
+            .catch(error => {
+                console.error('Error fetching insights:', error);
+                loading.classList.remove('flex');
+                loading.classList.add('hidden');
+                container.classList.remove('rainbow-active');
+                result.innerText = "Error generating insights. Please ensure local Ollama is running.";
+                result.classList.remove('hidden', 'opacity-0');
+                result.classList.add('opacity-100');
+            });
+    }
+
+    let activeSentiment = 'all';
+
+    function setSentimentFilter(sentiment, btn) {
+        activeSentiment = sentiment;
+        
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('bg-slate-700', 'text-white');
+            b.classList.add('text-slate-400');
+        });
+        btn.classList.add('bg-slate-700', 'text-white');
+        btn.classList.remove('text-slate-400');
+
+        applyTableFilters();
+    }
+
+    let cloudTimeout;
+
+    function applyTableFilters() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('tbody tr.data-row');
+        const noResultsRow = document.getElementById('noResultsRow');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowText = row.innerText.toLowerCase();
+            const matchesSentiment = (activeSentiment === 'all') || rowText.includes(activeSentiment);
+            const matchesQuery = query === '' || rowText.includes(query);
+
+            if (matchesSentiment && matchesQuery) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (noResultsRow) {
+            if (visibleCount === 0 && rows.length > 0) {
+                noResultsRow.classList.remove('hidden');
+            } else {
+                noResultsRow.classList.add('hidden');
+            }
+        }
+
+        clearTimeout(cloudTimeout);
+        cloudTimeout = setTimeout(() => {
+            generateWordCloud();
+        }, 300);
+    }
+
+    function generateWordCloud() {
+        const canvas = document.getElementById('wordCloudCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.classList.add('cloud-fade');
+
+        setTimeout(() => {
+            const stopWords = new Set(["the", "is", "in", "and", "to", "a", "of", "for", "it", "with", "on", "this", "that", "was", "as", "are", "be", "i", "my", "but", "not", "have", "had", "at", "they", "you", "from", "we", "an", "will", "would", "were", "your", "just", "like", "about", "some", "people", "time", "even", "get", "can", "out", "all", "what", "when", "if", "there", "so", "up", "more", "has", "do", "don't", "their", "them", "than", "then", "only", "also", "very", "much", "years", "really", "dont", "never", "made", "make", "good", "know", "think", "because", "could", "going", "how"]);
+            
+            const rows = document.querySelectorAll('tbody tr.data-row');
+            let textData = "";
+
+            rows.forEach(row => {
+                if (row.style.display !== 'none' && row.innerText.toLowerCase().includes('negative')) {
+                    const textContent = row.querySelector('td p').innerText;
+                    textData += " " + textContent;
+                }
+            });
+
+            const words = textData.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
+            const counts = {};
+
+            words.forEach(w => {
+                if (w.length > 3 && !stopWords.has(w)) {
+                    counts[w] = (counts[w] || 0) + 1;
+                }
+            });
+
+            const wordArray = Object.keys(counts).map(w => [w, counts[w]]);
+            wordArray.sort((a, b) => b[1] - a[1]);
+            const topWords = wordArray.slice(0, 35); 
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+            if (topWords.length > 0) {
+                const maxCount = topWords[0][1];
+                
+                WordCloud(canvas, {
+                    list: topWords,
+                    clearCanvas: true,
+                    wait: 0,
+                    weightFactor: function (size) {
+                        return Math.max(12, (size / maxCount) * 35); 
+                    },
+                    fontFamily: 'JetBrains Mono, monospace',
+                    color: function (word, weight) {
+                        return (weight > (maxCount / 2)) ? '#ef4444' : '#f87171'; 
+                    },
+                    backgroundColor: 'transparent',
+                    rotateRatio: 0, 
+                    
+                    hover: function(item) {
+                        if (item) {
+                            canvas.style.cursor = 'pointer';
+                            canvas.setAttribute('title', `Click to search: "${item[0]}" (${item[1]} mentions)`);
+                        } else {
+                            canvas.style.cursor = 'default';
+                            canvas.setAttribute('title', '');
+                        }
+                    },
+                    
+                    click: function(item) {
+                        if (item) {
+                            const searchInput = document.getElementById('searchInput');
+                            searchInput.value = item[0]; 
+                            applyTableFilters(); 
+                        }
+                    }
+                });
+            } else {
+                ctx.fillStyle = '#64748b';
+                ctx.font = '12px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText('No negative words in current view.', canvas.width/2, canvas.height/2);
+            }
+
+            canvas.classList.remove('cloud-fade');
+        }, 150);
+    }
+
+    generateWordCloud();
 </script>
 {% endblock %}

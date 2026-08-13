@@ -1,3 +1,4 @@
+from django.contrib.sites import requests
 from django.db import models
 from django.db.models import Avg
 
@@ -61,6 +62,102 @@ class AnalysisSession(models.Model):
             ],
             'colors': ['#28a745', '#dc3545', '#ffc107']  # Clean Bootstrap Green, Red, Yellow
         }
+
+    @property
+    def generate_insights(self):
+        """Generate a concise executive summary using a local Ollama model."""
+        from collections import Counter
+        import requests
+
+        total_items = self.items.count()
+
+        if total_items == 0:
+            return "No items found in this session to analyze."
+
+        # Fetch a balanced sample
+        positive_samples = list(
+            self.items.filter(sentiment_label="positive")
+            .values_list("content", flat=True)[:15]
+        )
+
+        negative_samples = list(
+            self.items.filter(sentiment_label="negative")
+            .values_list("content", flat=True)[:15]
+        )
+
+        neutral_samples = list(
+            self.items.filter(sentiment_label="neutral")
+            .values_list("content", flat=True)[:10]
+        )
+
+        samples = positive_samples + negative_samples + neutral_samples
+
+        if not samples:
+            return "Not enough data points available for an executive summary."
+
+        feedback_text = "\n".join(f"- {text}" for text in samples)
+
+        prompt = f"""
+        You are a senior product analyst preparing an executive summary for leadership.
+
+        Analyze the following user feedback samples and write exactly **three professional sentences**.
+
+        Requirements:
+        - Focus on overall sentiment trends.
+        - Mention both strengths and pain points if they exist.
+        - Do not mention percentages unless explicitly evident.
+        - Return only the final paragraph with no markdown or code.
+
+        Feedback:
+        {feedback_text}
+        """
+
+        try:
+            # Direct HTTP call to local Ollama server API
+            response = requests.post(
+                "http://127.0.0.1:11434/api/generate",
+                json={
+                    "model": "qwen2.5-coder:7b",  # Matches your installed model list
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "num_ctx": 8192,
+                        "temperature": 0.3,
+                    },
+                },
+                timeout=120,
+            )
+
+            response.raise_for_status()
+            summary = response.json().get("response", "").strip()
+
+            # Remove accidental markdown fences
+            for token in ("```python", "```", "```output"):
+                summary = summary.replace(token, "")
+
+            if summary:
+                return summary.strip()
+
+        except Exception as e:
+            print(f"Ollama error: {e}")
+
+        # Fallback block if Ollama connection fails
+        sentiment_counts = Counter(
+            self.items.values_list("sentiment_label", flat=True)
+        )
+
+        positive = sentiment_counts.get("positive", 0)
+        negative = sentiment_counts.get("negative", 0)
+        neutral = sentiment_counts.get("neutral", 0)
+
+        dominant = max(sentiment_counts, key=sentiment_counts.get) if sentiment_counts else "neutral"
+
+        return (
+            f"Analysis covered {total_items} feedback items, with {dominant} sentiment being the most common. "
+            f"The dataset contains {positive} positive, {negative} negative, and {neutral} neutral responses. "
+            "Positive themes indicate user satisfaction, while recurring negative feedback suggests areas that warrant product and workflow improvements."
+        )
+
 
 
 class SentimentItem(models.Model):
