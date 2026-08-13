@@ -1,239 +1,139 @@
 # SentiMetrics
 
-> **A practical sentiment analysis platform for analyzing individual text and large collections of text through CSV datasets.**
+> **From raw feedback to actionable sentiment intelligence.**
 
-SentiMetrics is a web-based sentiment analysis application built with **Django and Python**. It allows users to analyze individual pieces of text or process an entire CSV dataset and classify each entry as **Positive, Negative, or Neutral** using the **VADER Sentiment Analysis** engine.
+SentiMetrics is a web-based sentiment analytics platform built with **Django, Python, VADER Sentiment Analysis, and local AI through Ollama**.
 
-The application is designed to make sentiment analysis simple, fast, and accessible through a clean web interface while maintaining analysis sessions and allowing processed results to be exported as CSV reports.
+It allows users to analyze individual text or process entire CSV datasets, classify feedback into positive, negative, and neutral sentiment, visualize sentiment distributions, identify frequently occurring negative terms, and generate an AI-powered executive summary from the analyzed feedback.
 
----
-## Overview
+The goal is simple:
 
-Understanding what people think about a product, service, topic, event, or piece of content can be difficult when the amount of feedback becomes large.
-
-Manually reading hundreds or thousands of comments and reviews is time-consuming and makes it difficult to identify overall sentiment patterns.
-
-**SentiMetrics** addresses this problem by providing a web-based interface where users can:
-
-1. Enter a single piece of text for immediate sentiment analysis.
-2. Upload a CSV dataset containing multiple text records.
-3. Automatically analyze each valid text entry.
-4. Classify the entries as positive, negative, or neutral.
-5. Review previous analysis sessions.
-6. Browse results through paginated tables.
-7. Export processed results as a CSV report.
+> **Turn large amounts of unstructured textual feedback into structured insights that are easier to understand and act upon.**
 
 ---
 
-## Problem Statement
+##  What Problem Does SentiMetrics Solve?
 
-Organizations, researchers, developers, and individuals frequently collect textual feedback from sources such as:
+Businesses, researchers, product teams, and organizations collect large amounts of textual feedback through:
 
-* Product reviews
-* Customer feedback
-* Social media posts
+* Customer reviews
+* Product feedback
+* Support tickets
 * Survey responses
-* Comments
+* Social media comments
+* App reviews
 * Tweets
-* Messages
 * Online discussions
 
-The problem is that raw text data does not immediately provide actionable insight.
+The problem is that raw feedback is difficult to interpret at scale.
 
-For example:
+Reading hundreds or thousands of comments manually is:
 
-> "The product looks amazing, but the battery life is disappointing."
+* Time-consuming
+* Difficult to scale
+* Inconsistent
+* Hard to summarize
+* Difficult to convert into actionable insights
 
-A human can understand the overall sentiment, but analyzing thousands of similar responses manually is inefficient.
+SentiMetrics automates the first stage of this process.
 
-SentiMetrics provides an automated approach for converting textual feedback into structured sentiment information.
+Instead of manually going through every response, users can upload their feedback and receive:
+
+```text
+Raw Feedback
+      ↓
+Data Validation
+      ↓
+Sentiment Analysis
+      ↓
+Positive / Neutral / Negative
+      ↓
+Statistical Summary
+      ↓
+Visual Analytics
+      ↓
+Negative-Term Analysis
+      ↓
+Local AI Executive Summary
+      ↓
+Exportable Results
+```
 
 ---
 
-## Solution
+#  Core Idea
 
-SentiMetrics processes textual input through a sentiment analysis pipeline.
+Most basic sentiment-analysis applications stop at:
 
-### Basic workflow
+> "This text is positive."
 
-```
-User Input / CSV Dataset
-          │
-          ▼
-    Input Validation
-          │
-          ▼
-    Text Extraction
-          │
-          ▼
-   VADER Sentiment Analysis
-          │
-          ▼
-   Compound Sentiment Score
-          │
-          ▼
- Positive / Neutral / Negative
-          │
-          ▼
- Database Storage
-          │
-          ▼
- Results Dashboard
-          │
-          ▼
-      CSV Export
-```
+SentiMetrics goes further by organizing the analysis into a complete workflow.
 
-The application supports both **single-text analysis** and **batch dataset processing**.
+It provides:
+
+* Sentiment classification
+* Sentiment scores
+* Dataset-level statistics
+* Average sentiment score
+* Dominant sentiment detection
+* Sentiment distribution visualization
+* Negative-word analysis
+* Search and sentiment filtering
+* Historical analysis sessions
+* CSV report export
+* Local AI-generated executive summaries
+
+This allows users to move from **classification → analysis → interpretation**.
 
 ---
 
-# Key Features
+#  Key Features
 
-## 1. Single Text Analysis
+## 1. Single Text Sentiment Analysis
 
-Users can enter an individual sentence, review, comment, tweet, or other text and analyze its sentiment.
+Analyze an individual piece of text directly from the dashboard.
 
 Example:
 
-```
+```text
 Input:
-"The new update is fantastic and much faster than the previous version."
+"The new update is amazing and much faster."
 
 Output:
 Sentiment: Positive
+Compound Score: Positive
 ```
 
-A session can also be given a custom title for easier identification later.
+Users can optionally provide a custom analysis-session title.
+
+If no title is provided, SentiMetrics automatically generates one using the current timestamp.
 
 ---
 
 ## 2. Batch CSV Sentiment Analysis
 
-SentiMetrics can process multiple text records from a CSV file.
-
-Instead of analyzing every entry individually, users can upload a dataset and process the records in bulk.
-
-Example dataset:
-
-| text                      |
-| ------------------------- |
-| The product is excellent. |
-| The service was terrible. |
-| The experience was okay.  |
-
-The system analyzes each record and stores its sentiment result.
-
----
-
-## 3. VADER Sentiment Analysis
-
-SentiMetrics uses **VADER (Valence Aware Dictionary and sEntiment Reasoner)** for sentiment analysis.
-
-The system extracts the VADER compound score and maps it to a sentiment label.
-
-### Classification thresholds
-
-|         Compound Score | Classification |
-| ---------------------: | -------------- |
-|              `>= 0.05` | Positive       |
-| `-0.05 < score < 0.05` | Neutral        |
-|             `<= -0.05` | Negative       |
-
-This classification logic is implemented directly in the project's sentiment-analysis utility.
-
----
-
-## 4. Analysis Sessions
-
-Each analysis is organized into a session.
-
-Sessions allow users to keep track of different analyses instead of treating every result as an isolated calculation.
-
-For example:
-
-```
-iPhone 15 Reviews
-Customer Feedback – July
-Twitter Dataset
-Product Survey
-```
-
----
-
-## 5. Historical Results
-
-Previously processed sessions are displayed on the dashboard.
-
-Users can select a session and view its associated sentiment-analysis results.
-
----
-
-## 6. Paginated Results
-
-Large datasets can contain many records.
-
-To prevent all records from being displayed at once, SentiMetrics uses backend pagination.
-
-The current implementation displays:
-
-```
-20 records per page
-```
-
-This keeps result pages manageable even when processing larger datasets.
-
----
-
-## 7. CSV Report Export
-
-Processed analysis sessions can be exported as CSV reports.
-
-The generated report contains:
-
-* Original text
-* Sentiment score
-* Sentiment label
-* Analysis timestamp
+Users can upload a CSV dataset and analyze multiple feedback records at once.
 
 Example:
-36
+
+```csv
+review
+"The product is excellent."
+"The delivery was terrible."
+"The experience was average."
 ```
-Text Content,Sentiment Score,Sentiment Label,Analyzed At
-"The product is excellent",0.5719,positive,2026-08-12 12:00:00
-"The service was terrible",-0.4767,negative,2026-08-12 12:01:00
-```
+
+SentiMetrics processes the records and creates a persistent analysis session containing the results.
 
 ---
 
-## 8. CSV Validation
+## 3. Automatic Text-Column Detection
 
-Before processing a dataset, SentiMetrics validates the uploaded file.
+SentiMetrics does not require every dataset to use the exact same column name.
 
-The application checks:
+The application searches for supported text columns including:
 
-* File presence
-* `.csv` extension
-* File size
-* Empty files
-* CSV header availability
-* Supported text columns
-
-The maximum CSV upload size is currently:
-
-```
-5 MB
-```
-
----
-
-## 9. Flexible Text Column Detection
-
-The application does not require only one specific column name.
-
-It searches for supported text-related column names including:
-
-```
+```text
 text
 comment
 tweet
@@ -242,83 +142,476 @@ review
 message
 ```
 
-This makes the system easier to use with datasets from different sources.
+The first matching column is automatically selected for analysis.
+
+This allows datasets from different sources to be processed without manually renaming their columns.
 
 ---
 
-## 10. Encoding Recovery
+## 4. CSV Validation
 
-SentiMetrics first attempts to decode uploaded CSV files using UTF-8 with BOM handling.
+Uploaded datasets are validated before processing.
 
-If that fails, it falls back to Latin-1 decoding.
+The application checks:
 
-This helps the application handle CSV files originating from different tools and legacy datasets.
+* Whether a file was uploaded
+* Whether the file is a `.csv`
+* Whether the file is empty
+* Whether the file exceeds the size limit
+* Whether a header row exists
+* Whether a supported text column exists
 
----
+The current maximum CSV upload size is:
 
-# How It Works
-
-SentiMetrics follows a simple processing pipeline.
-
-### Step 1 — Input
-
-The user provides either:
-
-* A single text input
-* A CSV dataset
-
-### Step 2 — Validation
-
-The application validates the input before processing it.
-
-For CSV files, it verifies the file format, file size, header row, and supported text column.
-
-### Step 3 — Text Extraction
-
-The relevant text is extracted from the input.
-
-For batch processing, the application automatically identifies a supported text column.
-
-### Step 4 — Sentiment Analysis
-
-Each text entry is passed to the VADER sentiment analyzer.
-
-The analyzer produces sentiment scores, including the compound score.
-
-### Step 5 — Classification
-
-The compound score is converted into one of three categories:
-
+```text
+5 MB
 ```
+
+---
+
+## 5. Encoding Recovery
+
+SentiMetrics first attempts to decode uploaded CSV files using:
+
+```text
+UTF-8 with BOM support
+```
+
+If UTF-8 decoding fails, the application falls back to:
+
+```text
+Latin-1
+```
+
+This improves compatibility with CSV files exported by different applications and older systems.
+
+---
+
+#  Sentiment Analysis Engine
+
+SentiMetrics currently uses:
+
+**VADER — Valence Aware Dictionary and sEntiment Reasoner**
+
+VADER is a lightweight lexicon- and rule-based sentiment analysis system designed particularly for text such as social media and short-form feedback.
+
+The project extracts VADER's compound sentiment score and maps it to one of three categories.
+
+### Score range
+
+```text
+-1.0 ───────────────────────────── +1.0
+Negative                           Positive
+```
+
+### Classification
+
+```text
+Compound Score >= 0.05
+        ↓
+     POSITIVE
+
+Compound Score <= -0.05
+        ↓
+     NEGATIVE
+
+Between -0.05 and +0.05
+        ↓
+     NEUTRAL
+```
+
+The thresholds follow the standard VADER sentiment classification approach.
+
+---
+
+#  Analytics Dashboard
+
+Each completed analysis session provides dataset-level statistics.
+
+## Total Analyzed
+
+Shows the number of valid feedback items processed.
+
+## Average Sentiment Score
+
+Calculates the average compound sentiment score across the session.
+
+This gives a high-level indication of the overall sentiment direction.
+
+## Dominant Sentiment
+
+Determines whether the largest proportion of analyzed feedback is:
+
+```text
 Positive
-Neutral
 Negative
+Neutral
 ```
-
-### Step 6 — Storage
-
-The analysis session and individual sentiment results are stored in the application's database.
-
-### Step 7 — Presentation
-
-The user can view the processed results through the web interface.
-
-### Step 8 — Export
-
-The complete session can be exported as a CSV report.
 
 ---
 
-# Technology Stack
+#  Sentiment Distribution
+
+SentiMetrics visualizes the distribution of:
+
+* Positive feedback
+* Negative feedback
+* Neutral feedback
+
+The current interface uses a doughnut chart to make the distribution easier to understand at a glance.
+
+Example:
+
+```text
+Positive     62%
+Neutral      14%
+Negative     24%
+```
+
+The exact values depend on the uploaded dataset.
+
+---
+
+#  Negative Word Cloud
+
+SentiMetrics includes a negative-feedback word cloud.
+
+The system:
+
+1. Identifies currently visible negative feedback.
+2. Extracts words from those records.
+3. Removes common stop words.
+4. Counts word frequency.
+5. Displays the most frequent terms visually.
+
+Up to the top 35 words are displayed.
+
+This helps users quickly identify recurring vocabulary within negative feedback.
+
+For example:
+
+```text
+       battery
+
+  slow        expensive
+
+       support
+
+   broken       delivery
+```
+
+The word cloud is interactive.
+
+Clicking a word applies it as a search filter to the analyzed feedback table.
+
+---
+
+#  Search and Sentiment Filtering
+
+The analyzed-items section provides:
+
+### Text Search
+
+Users can search through analyzed comments.
+
+### Sentiment Filters
+
+Users can filter the dataset by:
+
+```text
+All
+Positive
+Negative
+Neutral
+```
+
+This makes it easier to isolate specific categories of feedback.
+
+For example:
+
+> Search for `battery` + filter `Negative`
+
+can quickly surface negative feedback related to battery problems.
+
+---
+
+#  Local AI Executive Summary
+
+One of the major additions to the current version of SentiMetrics is a **local AI-powered executive summary**.
+
+Instead of forcing users to manually interpret all the individual sentiment results, SentiMetrics can generate a concise summary of the feedback landscape.
+
+The system:
+
+1. Retrieves a balanced sample of positive, negative, and neutral feedback.
+2. Sends the selected feedback to a locally running Ollama model.
+3. Uses the model to generate an executive-style summary.
+4. Displays the generated summary inside the analysis page.
+
+The summary is instructed to focus on:
+
+* Overall sentiment trends
+* Strengths
+* Pain points
+* Important feedback patterns
+
+---
+
+#  Why Local AI?
+
+The AI summary uses a **locally running Ollama instance** instead of sending feedback to an external cloud AI API.
+
+This provides an important privacy advantage for sensitive feedback datasets because the AI processing can remain on the user's machine.
+
+Current implementation:
+
+```text
+SentiMetrics
+     │
+     ▼
+Django Backend
+     │
+     ▼
+Local Ollama API
+     │
+     ▼
+Local Language Model
+     │
+     ▼
+Executive Summary
+```
+
+The current implementation uses:
+
+```text
+qwen2.5-coder:7b
+```
+
+as the configured Ollama model.
+
+---
+
+#  Why Use Two Different AI/NLP Components?
+
+SentiMetrics deliberately separates:
+
+### Sentiment classification
+
+**VADER**
+
+Used for:
+
+```text
+Text
+ ↓
+Sentiment Score
+ ↓
+Positive / Negative / Neutral
+```
+
+### Higher-level interpretation
+
+**Local Ollama model**
+
+Used for:
+
+```text
+Sampled Feedback
+ ↓
+Pattern Interpretation
+ ↓
+Executive Summary
+```
+
+This separation allows the application to use a lightweight deterministic sentiment engine for classification while using a local language model for higher-level interpretation.
+
+---
+
+#  Batch Processing Optimization
+
+CSV processing is designed to avoid creating database records one at a time.
+
+After sentiment analysis, results are inserted using:
+
+```python
+bulk_create(..., batch_size=500)
+```
+
+This allows database insertion to occur in batches rather than performing a separate database operation for every analyzed item.
+
+The current implementation uses a batch size of:
+
+```text
+500 records
+```
+
+---
+
+#  Analysis Sessions
+
+Every analysis is stored as an `AnalysisSession`.
+
+A session contains:
+
+* Session title
+* Creation timestamp
+* Analyzed feedback items
+* Sentiment scores
+* Sentiment classifications
+
+This allows users to maintain a history of different datasets and analyses.
+
+Example:
+
+```text
+Customer Reviews – July
+App Store Reviews
+Support Tickets – Q3
+Product Feedback
+Social Media Dataset
+```
+
+---
+
+#  Database Structure
+
+SentiMetrics currently uses two primary data models.
+
+## AnalysisSession
+
+Represents a complete analysis.
+
+```text
+AnalysisSession
+├── title
+├── created_at
+└── sentiment items
+```
+
+## SentimentItem
+
+Represents an individual analyzed text record.
+
+```text
+SentimentItem
+├── session
+├── content
+├── sentiment_score
+├── sentiment_label
+└── created_at
+```
+
+Database indexes are also used on:
+
+```text
+session + created_at
+sentiment_label
+```
+
+to improve query efficiency for common operations.
+
+---
+
+#  CSV Export
+
+Completed analysis sessions can be exported as CSV reports.
+
+The exported report contains:
+
+```text
+Text Content
+Sentiment Score
+Sentiment Label
+Analyzed At
+```
+
+Example:
+
+```csv
+Text Content,Sentiment Score,Sentiment Label,Analyzed At
+"The product is excellent",0.5719,positive,2026-08-13 10:20:00
+"The service was terrible",-0.4767,negative,2026-08-13 10:21:00
+"The product is okay",0.2263,positive,2026-08-13 10:22:00
+```
+
+---
+
+#  System Architecture
+
+```text
+                         ┌───────────────────┐
+                         │       USER        │
+                         └─────────┬─────────┘
+                                   │
+                                   ▼
+                         ┌───────────────────┐
+                         │   Django Web UI   │
+                         └─────────┬─────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │                             │
+                    ▼                             ▼
+          ┌──────────────────┐          ┌──────────────────┐
+          │ Single Text      │          │ CSV Batch        │
+          │ Analysis         │          │ Upload           │
+          └────────┬─────────┘          └────────┬─────────┘
+                   │                             │
+                   └──────────────┬──────────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │ Input Validation    │
+                       └──────────┬──────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │ VADER Sentiment     │
+                       │ Analysis             │
+                       └──────────┬──────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │ Score + Label       │
+                       └──────────┬──────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │ Django Database     │
+                       └──────────┬──────────┘
+                                  │
+                     ┌────────────┴─────────────┐
+                     │                          │
+                     ▼                          ▼
+          ┌────────────────────┐      ┌────────────────────┐
+          │ Statistical        │      │ Visualization      │
+          │ Analytics          │      │ & Word Cloud       │
+          └────────────────────┘      └────────────────────┘
+                     │
+                     ▼
+          ┌────────────────────┐
+          │ Local Ollama AI    │
+          │ Executive Summary  │
+          └─────────┬──────────┘
+                    ▼
+          ┌────────────────────┐
+          │ Actionable         │
+          │ Feedback Insights  │
+          └────────────────────┘
+```
+
+---
+
+# 🛠️ Technology Stack
 
 ## Backend
 
 * Python
-* Django
+* Django 6.1
 
-## Sentiment Analysis
+## NLP / Sentiment Analysis
 
-* VADER Sentiment
+* VADER Sentiment 3.3.2
+
+## Local AI
+
+* Ollama
+* Qwen 2.5 Coder 7B
 
 ## Data Processing
 
@@ -326,20 +619,27 @@ The complete session can be exported as a CSV report.
 * NumPy
 * Python CSV utilities
 
-## Database / ORM
+## Database
 
 * Django ORM
+* SQLite / Django-supported database configuration
 
 ## Frontend
 
-* HTML
 * Django Templates
-* Bootstrap-based UI
+* HTML
+* JavaScript
+* Tailwind-style utility classes
+
+## Visualization
+
+* Chart.js
+* WordCloud2.js
 
 ## Reporting
 
 * CSV export
-* ReportLab dependency included for report-generation capabilities
+* ReportLab dependency
 
 ## Development / Code Quality
 
@@ -347,59 +647,9 @@ The complete session can be exported as a CSV report.
 
 ---
 
-# System Architecture
+#  Project Structure
 
-```
-                    ┌──────────────────────┐
-                    │       User           │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   Django Web UI      │
-                    └──────────┬───────────┘
-                               │
-                 ┌─────────────┴─────────────┐
-                 │                           │
-                 ▼                           ▼
-        ┌─────────────────┐       ┌─────────────────┐
-        │ Single Text     │       │ CSV Upload      │
-        │ Analysis        │       │ Processing      │
-        └────────┬────────┘       └────────┬────────┘
-                 │                         │
-                 └────────────┬────────────┘
-                              ▼
-                  ┌──────────────────────┐
-                  │ Input Validation     │
-                  └──────────┬───────────┘
-                             ▼
-                  ┌──────────────────────┐
-                  │ VADER Analyzer       │
-                  └──────────┬───────────┘
-                             ▼
-                  ┌──────────────────────┐
-                  │ Sentiment Score      │
-                  │ + Classification     │
-                  └──────────┬───────────┘
-                             ▼
-                  ┌──────────────────────┐
-                  │ Django Database      │
-                  └──────────┬───────────┘
-                             ▼
-                  ┌──────────────────────┐
-                  │ Results Dashboard    │
-                  └──────────┬───────────┘
-                             ▼
-                  ┌──────────────────────┐
-                  │ CSV Report Export    │
-                  └──────────────────────┘
-```
-
----
-
-# Project Structure
-
-```
+```text
 SentiMetrics/
 │
 ├── .github/
@@ -427,94 +677,108 @@ SentiMetrics/
 ├── .hintrc
 ├── manage.py
 ├── pyproject.toml
-├── readme.md
+├── README.md
 ├── requirements.txt
 └── sentiment_data.csv
 ```
 
-### Important files
+---
 
-| File                            | Purpose                                                                |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| `manage.py`                     | Django project management entry point                                  |
-| `core/views.py`                 | Handles dashboard, text analysis, CSV processing, results, and exports |
-| `core/utils.py`                 | Contains the VADER sentiment-analysis logic                            |
-| `core/models.py`                | Defines database models                                                |
-| `core/urls.py`                  | Defines application routes                                             |
-| `templates/dashboard.html`      | Main analysis dashboard                                                |
-| `templates/session_detail.html` | Displays session results                                               |
-| `requirements.txt`              | Python dependencies                                                    |
-| `pyproject.toml`                | Ruff configuration and project tooling                                 |
+#  End-to-End Workflow
+
+### Single Text
+
+```text
+User enters text
+      ↓
+Django receives request
+      ↓
+Input validation
+      ↓
+VADER analysis
+      ↓
+Compound score
+      ↓
+Sentiment classification
+      ↓
+Database storage
+      ↓
+Results dashboard
+```
+
+### CSV Dataset
+
+```text
+Upload CSV
+    ↓
+Validate file
+    ↓
+Check file size
+    ↓
+Decode CSV
+    ↓
+Detect text column
+    ↓
+Read valid records
+    ↓
+Run VADER
+    ↓
+Bulk database insertion
+    ↓
+Generate analytics
+    ↓
+Display results
+```
+
+### AI Insights
+
+```text
+Stored feedback
+      ↓
+Balanced sampling
+      ↓
+Positive + Negative + Neutral samples
+      ↓
+Local Ollama API
+      ↓
+Qwen model
+      ↓
+Executive summary
+```
+---
+
+#  Using SentiMetrics
+
+## Analyze Individual Text
+
+1. Open the dashboard.
+2. Enter an optional session title.
+3. Paste your text.
+4. Click **Analyze Sentiment**.
+5. Open the generated session.
+6. Review the sentiment score and classification.
 
 ---
 
-# Sentiment Analysis
+## Analyze a CSV
 
-SentiMetrics currently uses the VADER sentiment analyzer.
-
-The application extracts the VADER compound score:
-
-```
-compound ∈ [-1, +1]
-```
-
-The score is then classified using the following logic:
-
-```
-if compound_score >= 0.05:
-    sentiment = "positive"
-
-elif compound_score <= -0.05:
-    sentiment = "negative"
-
-else:
-    sentiment = "neutral"
-```
-
-### Example
-
-```
-Input:
-"I absolutely love this product!"
-
-Compound Score:
-Positive
-
-Classification:
-Positive
-```
-
-```
-Input:
-"This product is okay, nothing special."
-
-Compound Score:
-Near zero
-
-Classification:
-Neutral
-```
-
-```
-Input:
-"The service was extremely disappointing."
-
-Compound Score:
-Negative
-
-Classification:
-Negative
-```
+1. Prepare a CSV file.
+2. Make sure it contains a supported text column.
+3. Open the dashboard.
+4. Select the CSV file.
+5. Optionally enter a session title.
+6. Click **Process Batch**.
+7. Review the generated analysis.
+8. Use the dashboard filters and analytics.
+9. Export the results if required.
 
 ---
 
-# CSV Batch Processing
+#  Supported CSV Columns
 
-SentiMetrics accepts CSV datasets containing a text-based column.
+SentiMetrics currently recognizes:
 
-Supported column names include:
-
-```
+```text
 text
 comment
 tweet
@@ -523,204 +787,270 @@ review
 message
 ```
 
-The application automatically detects the first supported column it finds.
+Example:
 
-### Example
-
+```csv
+text
+"I love the new product."
+"The application keeps crashing."
+"The experience was okay."
 ```
-review
-"The product is amazing."
-"The delivery was extremely slow."
-"The experience was average."
-```
-
-The system processes every valid text entry and associates the results with an analysis session.
-
-For database efficiency, records are inserted using bulk creation in batches.
 
 ---
 
-# Using SentiMetrics
+#  Example Analysis
 
-## Analyze Individual Text
+Input:
 
-1. Open the SentiMetrics dashboard.
-2. Enter an optional session title.
-3. Paste the text you want to analyze.
-4. Click **Analyze Text**.
-5. View the generated sentiment result.
-
----
-
-## Analyze a CSV Dataset
-
-1. Prepare a `.csv` file.
-2. Make sure it contains a supported text column.
-3. Open the SentiMetrics dashboard.
-4. Select **Batch CSV Upload**.
-5. Choose the CSV file.
-6. Enter an optional dataset title.
-7. Click **Process Dataset**.
-8. Open the generated analysis session.
-9. Review the results.
-10. Export the session if required.
-
----
-
-# Output and Reports
-
-Every analyzed text record contains:
-
+```text
+"The camera quality is excellent, but the battery life is disappointing."
 ```
-Text Content
+
+SentiMetrics processes the text using VADER and produces:
+
+```text
 Sentiment Score
-Sentiment Label
-Analysis Timestamp
+       ↓
+Compound Score
+
+Sentiment
+       ↓
+Positive / Negative / Neutral
 ```
 
-Reports can be exported as CSV files.
+For a larger dataset, the session additionally provides:
 
-The generated report follows the structure:
-
-```
-SentiMetrics_Report_<session_name>.csv
+```text
+Total Analyzed
+Average Score
+Dominant Sentiment
+Sentiment Distribution
+Negative Word Cloud
+Search & Filtering
+AI Executive Summary
 ```
 
 ---
 
-# Input Validation
+#  What Makes SentiMetrics Different?
 
-SentiMetrics includes several safeguards during CSV processing.
+The sentiment-analysis algorithm itself is not claimed to be novel.
 
-### File validation
+The focus of SentiMetrics is the **complete analysis workflow**.
 
+Instead of only answering:
+
+> "Is this text positive or negative?"
+
+SentiMetrics combines:
+
+```text
+Classification
+      +
+Dataset Analytics
+      +
+Visualization
+      +
+Negative-Term Discovery
+      +
+Local AI Interpretation
+      +
+Exportable Results
 ```
-✓ File exists
-✓ File extension is .csv
-✓ File size is ≤ 5 MB
-✓ File is not empty
-✓ CSV contains a header row
-✓ CSV contains a supported text column
-```
 
-### Text validation
+This creates a bridge between **raw textual feedback** and **human-readable insights**.
 
-Empty text records are ignored during batch processing.
-
-If no valid text records are found, the analysis session is removed and the user receives an error message.
+The local AI layer is particularly useful because it can interpret a balanced sample of the analyzed feedback without requiring that feedback to be sent to a third-party cloud AI service.
 
 ---
 
-# Example Use Case
+#  Limitations
 
-Imagine a company has collected 1,000 customer reviews.
+SentiMetrics currently has several known limitations.
 
-Instead of manually reading every review, the team can upload the dataset:
+## VADER Context
 
-```
-customer_reviews.csv
-```
+VADER is not a large contextual language model.
 
-SentiMetrics processes the reviews and generates results such as:
-
-```
-Review                         Sentiment
-------------------------------------------------
-"Excellent product!"          Positive
-"Delivery was terrible."      Negative
-"Product is okay."            Neutral
-"Really happy with it."       Positive
-"Not worth the price."        Negative
-```
-
-The complete result can then be exported for further analysis.
-
----
-
-# Limitations
-
-SentiMetrics is currently based on VADER sentiment analysis. Therefore, sentiment classification may not always correctly interpret:
+It may struggle with:
 
 * Sarcasm
 * Complex context
 * Domain-specific terminology
 * Ambiguous statements
-* Very long or complicated text
-* Context that depends on previous sentences
-* Mixed or contradictory opinions
+* Long contextual dependencies
+* Mixed sentiment
+* Code-mixed language
 
-For example:
+Example:
 
+```text
+"Great, another update that broke everything."
 ```
-"Great, another update that completely broke the application."
-```
 
-A rule-based sentiment analyzer may interpret words such as "Great" differently from the intended sarcastic meaning.
+The intended sentiment is negative, but the word "Great" is literally positive.
 
 ---
 
-# Future Improvements
+## Local AI Dependency
 
-Potential improvements for future versions include:
+The AI Executive Summary requires:
 
-* Advanced transformer-based sentiment models
-* Multi-language sentiment analysis
-* Sentiment distribution charts
-* Dataset-level analytics
-* Sentiment trend visualization
-* Keyword and topic extraction
+* Ollama to be installed
+* Ollama to be running
+* The configured model to be available
+
+If Ollama is unavailable, SentiMetrics falls back to a deterministic summary based on sentiment counts rather than failing the entire analysis.
+
+---
+
+## CSV Size
+
+The current upload limit is:
+
+```text
+5 MB
+```
+
+This is appropriate for the current prototype but is not intended to represent a production-scale data-processing limit.
+
+---
+
+## No Formal Accuracy Claim
+
+SentiMetrics does not currently claim a specific sentiment-analysis accuracy percentage.
+
+A formal evaluation would require testing against a labeled benchmark or domain-specific validation dataset.
+
+---
+
+#  Future Improvements
+
+Potential future development includes:
+
+### NLP
+
+* Transformer-based sentiment models
+* Context-aware sentiment classification
 * Aspect-based sentiment analysis
-* More detailed analytics dashboards
+* Sarcasm detection
+* Multilingual sentiment analysis
+* Hindi / Hinglish support
+
+### Analytics
+
+* Sentiment trends over time
+* Topic extraction
+* Aspect-level sentiment
+* Automated issue detection
+* Emerging complaint detection
+* Comparative dataset analysis
+* Customer-segment analysis
+
+### AI
+
+* More capable local language models
+* Configurable AI models
+* Evidence-backed AI insights
+* AI-generated recommendations
+* Automatic root-cause analysis
+
+### Scalability
+
+* Background task processing
 * Larger dataset support
-* Authentication and user accounts
+* Chunked file processing
+* Redis / Celery integration
 * Cloud deployment
-* REST API support
-* Real-time sentiment analysis
-* PDF report generation
-* Automated dataset summaries
-* Improved handling of sarcasm and contextual sentiment
+* API access
+
+### Product
+
+* User authentication
+* Multi-user workspaces
+* Saved dashboards
+* PDF reports
+* Scheduled analysis
+* REST API
+* External data-source integrations
 
 ---
 
-# Hackathon Focus
+#  Hackathon Vision
 
-SentiMetrics is built around a simple objective:
+SentiMetrics is designed around a simple progression:
 
-> **Turn large amounts of unstructured textual feedback into understandable sentiment information.**
-
-The project combines:
-
-```
-Web Development
-      +
-Natural Language Processing
-      +
-Data Processing
-      +
-Database Management
-      +
-Report Generation
+```text
+RAW FEEDBACK
+     ↓
+UNDERSTAND SENTIMENT
+     ↓
+IDENTIFY PATTERNS
+     ↓
+UNDERSTAND PAIN POINTS
+     ↓
+GENERATE INSIGHTS
+     ↓
+MAKE BETTER DECISIONS
 ```
 
-into a single workflow that allows users to move from **raw text → sentiment → structured results → exportable data**.
+The long-term vision is to evolve SentiMetrics from a **sentiment-analysis application** into a broader **feedback intelligence platform**.
 
 ---
 
-# Team
+#  Team
 
 SentiMetrics is being developed as a team project for a hackathon.
 
-# License
-MIT license
+| Member        | Role      | Contribution     |
+| ------------- | --------- | ---------------- |
+| Team Member 1 | Developer | Add contribution |
+| Team Member 2 | Developer | Add contribution |
+| Team Member 3 | Developer | Add contribution |
+| Team Member 4 | Developer | Add contribution |
 
 ---
 
-## Project Repository
+#  Project Status
+
+**Current Status: Hackathon Prototype**
+
+Implemented:
+
+* [x] Single-text sentiment analysis
+* [x] CSV batch processing
+* [x] CSV validation
+* [x] Dynamic text-column detection
+* [x] UTF-8 / Latin-1 encoding recovery
+* [x] VADER sentiment scoring
+* [x] Positive / negative / neutral classification
+* [x] Persistent analysis sessions
+* [x] Average sentiment scoring
+* [x] Dominant sentiment detection
+* [x] Sentiment distribution visualization
+* [x] Negative-word cloud
+* [x] Search and sentiment filtering
+* [x] CSV report export
+* [x] Local Ollama AI executive summaries
+* [x] Fallback summary when Ollama is unavailable
+* [x] Batch database insertion optimization
+
+---
+
+#  License
+
+MIT License.
+
+---
+
+# 🔗 Repository
 
 **SentiMetrics**
 
-Built with Python, Django, and VADER Sentiment Analysis.
+GitHub:
+
+https://github.com/iamNaman-official/SentiMetrics
 
 ---
 
-⭐ If you find this project useful, consider giving the repository a star.
+> **SentiMetrics — Turn feedback into insight.**
